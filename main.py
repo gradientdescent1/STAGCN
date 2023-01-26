@@ -201,8 +201,8 @@ def test(zscore, loss, model, test_iter, args, return_preds=False):
 def plot_predictions(preds, ground_truths):
     plt.figure(figsize=(15, 15))
     for i in range(len(preds)):
-        plt.plot(range(len(preds[i])), preds[i], marker='o', color='black', markersize=5, linestyle='dashed')
-        plt.plot(range(len(ground_truths[i])), ground_truths[i], marker='x', color='red', makersize=6, linestyle='-.')
+        plt.plot(range(len(preds[i])), preds[i].cpu().numpy(), marker='o', color='black', markersize=5, linestyle='dashed')
+        plt.plot(range(len(ground_truths[i])), ground_truths[i].cpu().numpy(), marker='x', color='red', makersize=6, linestyle='-.')
     plt.show()
 
 
