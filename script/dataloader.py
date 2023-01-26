@@ -16,6 +16,8 @@ def load_adj(dataset_name):
         n_vertex = 325
     elif dataset_name == 'pemsd7-m':
         n_vertex = 228
+    elif dataset_name == 'covid':
+        n_vertex = 25
 
     return adj, n_vertex
 
