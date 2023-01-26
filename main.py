@@ -42,8 +42,8 @@ def get_parameters():
     parser.add_argument('--enable_cuda', type=bool, default=True, help='enable CUDA, default as True')
     parser.add_argument('--seed', type=int, default=42, help='set the random seed for stabilizing experiment results')
     parser.add_argument('--dataset', type=str, default='metr-la', choices=['metr-la', 'pems-bay', 'pemsd7-m', 'covid'])
-    parser.add_argument('--n_his', type=int, default=12)
-    parser.add_argument('--n_pred', type=int, default=3, help='the number of time interval for predcition, default as 3')
+    parser.add_argument('--n_his', type=int, default=30)
+    parser.add_argument('--n_pred', type=int, default=10, help='the number of time interval for predcition, default as 3')
     parser.add_argument('--time_intvl', type=int, default=5)
     parser.add_argument('--Kt', type=int, default=3)
     parser.add_argument('--stblock_num', type=int, default=2)
@@ -198,11 +198,12 @@ def test(zscore, loss, model, test_iter, args, return_preds=False):
 
 
 @torch.no_grad()
-def plot_predictions(preds, ground_truths):
+def plot_predictions(preds, ground_truths, figname="./prediction.png"):
     plt.figure(figsize=(15, 15))
     for i in range(len(preds)):
-        plt.plot(range(len(preds[i])), preds[i].cpu().numpy(), marker='o', color='black', markersize=5, linestyle='dashed')
-        plt.plot(range(len(ground_truths[i])), ground_truths[i].cpu().numpy(), marker='x', color='red', markersize=6, linestyle='-.')
+        plt.plot(range(i, i+len(preds[i])), preds[i].cpu().numpy(), marker='o', color='black', markersize=5, linestyle='dashed')
+        plt.plot(range(i, i+len(ground_truths[i])), ground_truths[i].cpu().numpy(), marker='x', color='red', markersize=6, linestyle='-.')
+    plt.savefig(figname)
     plt.show()
 
 
