@@ -7,6 +7,8 @@ import tqdm
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 import torch
 import torch.nn as nn
@@ -186,11 +188,24 @@ def val(model, val_iter):
     return torch.tensor(l_sum / n)
 
 @torch.no_grad() 
-def test(zscore, loss, model, test_iter, args):
+def test(zscore, loss, model, test_iter, args, return_preds=False):
     model.eval()
-    test_MSE = utility.evaluate_model(model, loss, test_iter)
+    test_MSE, preds, ground_truths = utility.evaluate_model(model, loss, test_iter, return_preds)
     test_MAE, test_RMSE, test_WMAPE = utility.evaluate_metric(model, test_iter, zscore)
     print(f'Dataset {args.dataset:s} | Test loss {test_MSE:.6f} | MAE {test_MAE:.6f} | RMSE {test_RMSE:.6f} | WMAPE {test_WMAPE:.8f}')
+    return preds, ground_truths
+
+
+
+@torch.no_grad()
+def plot_predictions(preds, ground_truths):
+    plt.figure(figsize=(15, 15))
+    for i in range(len(preds)):
+        plt.plot(range(len(preds[i])), preds[i], marker='o', color='black', markersize=5, linestyle='dashed')
+        plt.plot(range(len(ground_truths[i])), ground_truths[i], marker='x', color='red', makersize=6, linestyle='-.')
+    plt.show()
+
+
 
 if __name__ == "__main__":
     # Logging
@@ -202,4 +217,7 @@ if __name__ == "__main__":
     n_vertex, zscore, train_iter, val_iter, test_iter = data_preparate(args, device)
     loss, es, model, optimizer, scheduler = prepare_model(args, blocks, n_vertex)
     train(loss, args, optimizer, scheduler, es, model, train_iter, val_iter)
-    test(zscore, loss, model, test_iter, args)
+    preds, ground_truths = test(zscore, loss, model, test_iter, args, return_preds=True)
+    plot_predictions(preds, ground_truths)
+
+
