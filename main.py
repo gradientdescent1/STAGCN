@@ -187,8 +187,8 @@ def train(loss, args, optimizer, scheduler, es, model, train_iter, val_iter):
         model.train()
         for x, y in tqdm.tqdm(train_iter):
             y_pred = model(x).view(len(x), -1)  # [batch_size, num_nodes]
-            print(f"y_pred.shape = {y_pred.shape}")
-            print(f"y.shape = {y.shape}")
+            #print(f"y_pred.shape = {y_pred.shape}")
+            #print(f"y.shape = {y.shape}")
             # y_pred=y_pred.resize(32,58)
             # print(y_pred.shape)
             l = loss(y_pred, y)

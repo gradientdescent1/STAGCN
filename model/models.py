@@ -33,7 +33,7 @@ class STGCNChebGraphConv(nn.Module):
         for l in range(len(blocks) - 3):
             # print(l)
             modules.append(layers.STConvBlock(args.Kt, args.Ks, n_vertex,
-                                              blocks[l][-1], blocks[l+1], args.act_func, args.graph_conv_type, args.gso, args.enable_bias, args.droprate, n_his))
+                                              blocks[l][-1], blocks[l+1], args.act_func, args.graph_conv_type, args.gso, args.enable_bias, args.droprate, n_his, l))
             n_his -= 2
         self.st_blocks = nn.Sequential(*modules)
         Ko = args.n_his - (len(blocks) - 3) * 2 * (args.Kt - 1)
@@ -53,20 +53,20 @@ class STGCNChebGraphConv(nn.Module):
             self.dropout = nn.Dropout(p=args.droprate)
 
     def forward(self, x):
-        print(f"initial shape = {x.shape}, self.Ko = {self.Ko}")
+        #print(f"initial shape = {x.shape}, self.Ko = {self.Ko}")
         x = self.st_blocks(x)
-        print(f"output of st blocks = {x.shape}")
+        #print(f"output of st blocks = {x.shape}")
         if self.Ko > 1:
             x = self.output(x)
-            print(f"K0 > 1 = {x.shape}")
+            #print(f"K0 > 1 = {x.shape}")
         elif self.Ko == 0:
-            print(f"Ko == 0, = {x.shape}")
+            #print(f"Ko == 0, = {x.shape}")
             x = self.fc1(x.permute(0, 2, 3, 1))
-            print(f"after fc1 in Ko = {x.shape}")
+            #print(f"after fc1 in Ko = {x.shape}")
             x = self.relu(x)
-            print(f"after relu in Ko = {x.shape}")
+            #print(f"after relu in Ko = {x.shape}")
             x = self.fc2(x).permute(0, 3, 1, 2)
-            print(f"after fc2 in Ko = {x.shape}")
+            #print(f"after fc2 in Ko = {x.shape}")
 
         return x
 
@@ -100,7 +100,7 @@ class STGCNGraphConv(nn.Module):
         n_his = args.n_his
         for l in range(len(blocks) - 3):
             modules.append(layers.STConvBlock(args.Kt, args.Ks, n_vertex,
-                                              blocks[l][-1], blocks[l+1], args.act_func, args.graph_conv_type, args.gso, args.enable_bias, args.droprate, n_his))
+                                              blocks[l][-1], blocks[l+1], args.act_func, args.graph_conv_type, args.gso, args.enable_bias, args.droprate, n_his, l))
             n_his -= 2
         self.st_blocks = nn.Sequential(*modules)
         Ko = args.n_his - (len(blocks) - 3) * 2 * (args.Kt - 1)
