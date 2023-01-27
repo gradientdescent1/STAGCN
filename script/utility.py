@@ -120,9 +120,9 @@ def evaluate_metric(model, data_iter, scaler):
             mape += (d / y).tolist()
             mse += (d ** 2).tolist()
         MAE = np.array(mae).mean()
-        #MAPE = np.array(mape).mean()
+        MAPE = np.array(mape).mean()
         RMSE = np.sqrt(np.array(mse).mean())
         WMAPE = np.sum(np.array(mae)) / np.sum(np.array(sum_y))
-
+        NRMSE = RMSE/((np.max(y) - np.min(y))
         #return MAE, MAPE, RMSE
-        return MAE, RMSE, WMAPE
+        return MAE, RMSE, WMAPE, MAPE, NRMSE
