@@ -227,9 +227,9 @@ def test(zscore, loss, model, test_iter, args, return_preds=False):
     model.eval()
     test_MSE, preds, ground_truths = utility.evaluate_model(
         model, loss, test_iter, return_preds)
-    test_MAE, test_RMSE, test_WMAPE = utility.evaluate_metric(
+    test_MAE, test_RMSE, test_WMAPE, test_NRMSE, test_MAPE = utility.evaluate_metric(
         model, test_iter, zscore)
-    print(f'Dataset {args.dataset:s} | Test loss {test_MSE:.6f} | MAE {test_MAE:.6f} | RMSE {test_RMSE:.6f} | WMAPE {test_WMAPE:.8f}')
+    print(f'Dataset {args.dataset:s} | Test loss {test_MSE:.6f} | MAE {test_MAE:.6f} | RMSE {test_RMSE:.6f} | WMAPE {test_WMAPE:.8f} | NRMSE {test_NRMSE:.6f} | MAPE {test_MAPE:.6f}')
     return preds, ground_truths
 
 
