@@ -159,7 +159,7 @@ class ChebGraphConv(nn.Module):
             init.uniform_(self.bias, -bound, bound)
 
     def forward(self, x):
-        #bs, c_in, ts, n_vertex = x.shape
+        # bs, c_in, ts, n_vertex = x.shape
         x = torch.permute(x, (0, 2, 3, 1))
 
         if self.Ks - 1 < 0:
@@ -213,7 +213,7 @@ class GraphConv(nn.Module):
             init.uniform_(self.bias, -bound, bound)
 
     def forward(self, x):
-        #bs, c_in, ts, n_vertex = x.shape
+        # bs, c_in, ts, n_vertex = x.shape
         x = torch.permute(x, (0, 2, 3, 1))
 
         first_mul = torch.einsum('hi,btij->bthj', self.gso, x)
@@ -262,7 +262,7 @@ class MultiHeadSelfAttention(nn.Module):
         '''
         Arguments:
             hidden_dim: Dimension of the output of the self-attention.
-            num_heads: Number of heads for the multi-head attention. 
+            num_heads: Number of heads for the multi-head attention.
             dropout: Dropout probability for the self-attention. If `0.0` then no dropout will be used.
 
         Returns:
@@ -272,15 +272,15 @@ class MultiHeadSelfAttention(nn.Module):
         if hidden_dim % num_heads != 0:
             print('The hidden size {} is not a multiple of the number of heads {}'.format(
                 hidden_dim, num_heads))
-        self.attention_layer = nn.MultiheadAttention(
+        self.attention_layer=nn.MultiheadAttention(
             hidden_dim, num_heads, dropout=dropout, batch_first=True)
 
     def forward(self, x, key_padding_mask=None, attention_mask=None):
         '''
         Arguments:
             x: Tensor containing input token embeddings.
-            key_padding_mask: Mask indicating which elements within the input sequence to be considered as padding and ignored for the computation of self-attention scores.  
-            attention_mask: Mask indicating which relative positions are allowed to attend.  
+            key_padding_mask: Mask indicating which elements within the input sequence to be considered as padding and ignored for the computation of self-attention scores.
+            attention_mask: Mask indicating which relative positions are allowed to attend.
         '''
         return self.attention_layer(query=x, key=x, value=x, key_padding_mask=key_padding_mask, attn_mask=attention_mask)
 
@@ -295,69 +295,69 @@ class STConvBlock(nn.Module):
 
     def __init__(self, Kt, Ks, n_vertex, last_block_channel, channels, act_func, graph_conv_type, gso, bias, droprate, n_his=None):
         super(STConvBlock, self).__init__()
-        self.tmp_conv1 = TemporalConvLayer(
+        self.tmp_conv1=TemporalConvLayer(
             Kt, last_block_channel, channels[0], n_vertex, act_func)
-        self.graph_conv = GraphConvLayer(
+        self.graph_conv=GraphConvLayer(
             graph_conv_type, channels[0], channels[1], Ks, gso, bias)
-        self.tmp_conv2 = TemporalConvLayer(
+        self.tmp_conv2=TemporalConvLayer(
             Kt, channels[1], channels[2], n_vertex, act_func)
 
         if n_his == 30:
-            self.attn = MultiHeadSelfAttention(
+            self.attn=MultiHeadSelfAttention(
                 hidden_dim=144*(n_his-2), num_heads=1)
-            self.fcn = nn.Linear(144*(n_his-2),
+            self.fcn=nn.Linear(144*(n_his-2),
                                  64*(n_his-4))
         else:
-            self.attn = MultiHeadSelfAttention(
+            self.attn=MultiHeadSelfAttention(
                 hidden_dim=144*(n_his-4), num_heads=1)
-            self.fcn = nn.Linear(144*(n_his-4),
+            self.fcn=nn.Linear(144*(n_his-4),
                                  64*(n_his-6))
 
-        print(f"n_his = {n_his}")
-        self.tc2_ln = nn.LayerNorm([n_vertex, channels[2]])
-        self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(p=droprate)
+        # print(f"n_his = {n_his}")
+        self.tc2_ln=nn.LayerNorm([n_vertex, channels[2]])
+        self.relu=nn.ReLU()
+        self.dropout=nn.Dropout(p=droprate)
 
     def forward(self, x):
-        print("############################ entering the forward method of STConvBlock ###########################################")
-        print(f"Input shape to STConvBlock = {x.shape}")
-        tmp1 = self.tmp_conv1(x)
-        print(tmp1.shape)
-        graph1 = self.graph_conv(tmp1)
-        print(graph1.shape)
-        graph1 = self.relu(graph1)
-        print(graph1.shape)
-        x = self.tmp_conv2(graph1)
-        print(x.shape)
-        tmp2 = F.pad(x, (0, 0, 1, 1), "constant", 0)
-        print(tmp2.shape)
-        concat = torch.cat([tmp1, graph1, tmp2], dim=1)
-        print(f"concat.shape = {concat.shape}")
-        batch_size, channels, embed_dim, num_nodes = concat.size()
-        attn_out, _ = self.attn(concat.reshape(
+        # print("############################ entering the forward method of STConvBlock ###########################################")
+        # print(f"Input shape to STConvBlock = {x.shape}")
+        tmp1=self.tmp_conv1(x)
+        # print(tmp1.shape)
+        graph1=self.graph_conv(tmp1)
+        # print(graph1.shape)
+        graph1=self.relu(graph1)
+        # print(graph1.shape)
+        x=self.tmp_conv2(graph1)
+        # print(x.shape)
+        tmp2=F.pad(x, (0, 0, 1, 1), "constant", 0)
+        # print(tmp2.shape)
+        concat=torch.cat([tmp1, graph1, tmp2], dim=1)
+        # print(f"concat.shape = {concat.shape}")
+        batch_size, channels, embed_dim, num_nodes=concat.size()
+        attn_out, _=self.attn(concat.reshape(
             batch_size, num_nodes, channels*embed_dim))
-        print(batch_size, channels, embed_dim, num_nodes)
-        print(f"attention_output.shape = {attn_out.shape}")
+        # print(batch_size, channels, embed_dim, num_nodes)
+        # print(f"attention_output.shape = {attn_out.shape}")
         attn_out = self.fcn(attn_out)
-        print(f"shape after adjusting = {attn_out.shape}")
+        # print(f"shape after adjusting = {attn_out.shape}")
         batch_size, channels, embed_dim, num_nodes = concat.size()
-        print(f"embed_dim = {embed_dim}")
+        # print(f"embed_dim = {embed_dim}")
         if embed_dim == 28:
             x1 = attn_out.permute(0, 2, 1).view(
                 batch_size, -1, embed_dim-2, num_nodes)
         else:
-            print(f"shape after permute")
+            # print(f"shape after permute")
             x1 = attn_out.permute(0, 2, 1).reshape(
                 (batch_size, -1, embed_dim-2, num_nodes))
 
-        print(f"x1.shape = {x1.shape}")
+        # print(f"x1.shape = {x1.shape}")
         # x1 = attn_out
         x = x1
 
         x = self.tc2_ln(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
         x = self.dropout(x)
 
-        print(f"output_shape = {x.shape}")
+        # print(f"output_shape = {x.shape}")
 
         return x
 
@@ -371,13 +371,13 @@ class OutputBlock(nn.Module):
 
     def __init__(self, Ko, last_block_channel, channels, end_channel, n_vertex, act_func, bias, droprate):
         super(OutputBlock, self).__init__()
-        print(Ko, last_block_channel, channels, end_channel,
-              n_vertex, act_func, bias, droprate)
+        # print(Ko, last_block_channel, channels, end_channel,
+        #       n_vertex, act_func, bias, droprate)
         self.tmp_conv1 = TemporalConvLayer(
             Ko, last_block_channel, channels[0], n_vertex, act_func)
         z = torch.zeros(1, 64, 26, 4)
         z = self.tmp_conv1(z)
-        print(f"trail z.shape = {z.shape}")
+        # print(f"trail z.shape = {z.shape}")
         self.fc1 = nn.Linear(
             in_features=channels[0], out_features=channels[1], bias=bias)
         self.fc2 = nn.Linear(
@@ -389,16 +389,16 @@ class OutputBlock(nn.Module):
         self.dropout = nn.Dropout(p=droprate)
 
     def forward(self, x):
-        print(f"before tmp_conv1 in outputblock = {x.shape}")
+        # print(f"before tmp_conv1 in outputblock = {x.shape}")
         x = self.tmp_conv1(x)
-        print(f"after tmp_conv1 in outputblock = {x.shape}")
+        # print(f"after tmp_conv1 in outputblock = {x.shape}")
         x = self.tc1_ln(x.permute(0, 2, 3, 1))
-        print(f"after layernorm in outputblock = {x.shape}")
+        # print(f"after layernorm in outputblock = {x.shape}")
         x = self.fc1(x)
-        print(f"after fc1 in outputblock = {x.shape}")
+        # print(f"after fc1 in outputblock = {x.shape}")
         x = self.relu(x)
-        print(f"after relu in outputblock = {x.shape}")
+        # print(f"after relu in outputblock = {x.shape}")
         x = self.fc2(x).permute(0, 3, 1, 2)
-        print(f"after fc2 in outputblock = {x.shape}")
+        # print(f"after fc2 in outputblock = {x.shape}")
 
         return x
