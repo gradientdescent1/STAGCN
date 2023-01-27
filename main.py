@@ -20,6 +20,7 @@ from model import models
 
 #import nni
 
+
 def set_env(seed):
     # Set available CUDA devices
     # This option is crucial for an multi-GPU device
@@ -27,7 +28,7 @@ def set_env(seed):
     # os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
     # os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':16:8'
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
-    os.environ['PYTHONHASHSEED']=str(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -37,30 +38,44 @@ def set_env(seed):
     torch.backends.cudnn.deterministic = True
     torch.use_deterministic_algorithms(True)
 
+
 def get_parameters():
     parser = argparse.ArgumentParser(description='STGCN')
-    parser.add_argument('--enable_cuda', type=bool, default=True, help='enable CUDA, default as True')
-    parser.add_argument('--seed', type=int, default=42, help='set the random seed for stabilizing experiment results')
-    parser.add_argument('--dataset', type=str, default='metr-la', choices=['metr-la', 'pems-bay', 'pemsd7-m', 'covid'])
+    parser.add_argument('--enable_cuda', type=bool,
+                        default=True, help='enable CUDA, default as True')
+    parser.add_argument('--seed', type=int, default=42,
+                        help='set the random seed for stabilizing experiment results')
+    parser.add_argument('--dataset', type=str, default='metr-la',
+                        choices=['metr-la', 'pems-bay', 'pemsd7-m', 'covid'])
     parser.add_argument('--n_his', type=int, default=30)
-    parser.add_argument('--n_pred', type=int, default=10, help='the number of time interval for predcition, default as 3')
-    parser.add_argument('--time_intvl', type=int, default=5)
+    parser.add_argument('--n_pred', type=int, default=10,
+                        help='the number of time interval for predcition, default as 3')
+    parser.add_argument('--time_intvl', type=int, default=1)
     parser.add_argument('--Kt', type=int, default=3)
     parser.add_argument('--stblock_num', type=int, default=2)
-    parser.add_argument('--act_func', type=str, default='glu', choices=['glu', 'gtu'])
+    parser.add_argument('--act_func', type=str,
+                        default='glu', choices=['glu', 'gtu'])
     parser.add_argument('--Ks', type=int, default=3, choices=[3, 2])
-    parser.add_argument('--graph_conv_type', type=str, default='cheb_graph_conv', choices=['cheb_graph_conv', 'graph_conv'])
-    parser.add_argument('--gso_type', type=str, default='sym_norm_lap', choices=['sym_norm_lap', 'rw_norm_lap', 'sym_renorm_adj', 'rw_renorm_adj'])
-    parser.add_argument('--enable_bias', type=bool, default=True, help='default as True')
+    parser.add_argument('--graph_conv_type', type=str,
+                        default='cheb_graph_conv', choices=['cheb_graph_conv', 'graph_conv'])
+    parser.add_argument('--gso_type', type=str, default='sym_norm_lap',
+                        choices=['sym_norm_lap', 'rw_norm_lap', 'sym_renorm_adj', 'rw_renorm_adj'])
+    parser.add_argument('--enable_bias', type=bool,
+                        default=True, help='default as True')
     parser.add_argument('--droprate', type=float, default=0.5)
-    parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
-    parser.add_argument('--weight_decay_rate', type=float, default=0.0005, help='weight decay (L2 penalty)')
+    parser.add_argument('--lr', type=float, default=0.001,
+                        help='learning rate')
+    parser.add_argument('--weight_decay_rate', type=float,
+                        default=0.0005, help='weight decay (L2 penalty)')
     parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--epochs', type=int, default=10000, help='epochs, default as 10000')
-    parser.add_argument('--opt', type=str, default='adam', help='optimizer, default as adam')
+    parser.add_argument('--epochs', type=int, default=10000,
+                        help='epochs, default as 10000')
+    parser.add_argument('--opt', type=str, default='adam',
+                        help='optimizer, default as adam')
     parser.add_argument('--step_size', type=int, default=10)
     parser.add_argument('--gamma', type=float, default=0.95)
-    parser.add_argument('--patience', type=int, default=30, help='early stopping patience')
+    parser.add_argument('--patience', type=int, default=30,
+                        help='early stopping patience')
     args = parser.parse_args()
     print('Training configs: {}'.format(args))
 
@@ -75,7 +90,7 @@ def get_parameters():
         device = torch.device('cuda')
     else:
         device = torch.device('cpu')
-    
+
     Ko = args.n_his - (args.Kt - 1) * 2 * args.stblock_num
 
     # blocks: settings of channel size in st_conv_blocks and output layer,
@@ -89,10 +104,11 @@ def get_parameters():
     elif Ko > 0:
         blocks.append([128, 128])
     blocks.append([1])
-    
+
     return args, device, blocks
 
-def data_preparate(args, device):    
+
+def data_preparate(args, device):
     adj, n_vertex = dataloader.load_adj(args.dataset)
     gso = utility.calc_gso(adj, args.gso_type)
     if args.graph_conv_type == 'cheb_graph_conv':
@@ -118,22 +134,30 @@ def data_preparate(args, device):
     val = zscore.transform(val)
     test = zscore.transform(test)
 
-    x_train, y_train = dataloader.data_transform(train, args.n_his, args.n_pred, device)
-    x_val, y_val = dataloader.data_transform(val, args.n_his, args.n_pred, device)
-    x_test, y_test = dataloader.data_transform(test, args.n_his, args.n_pred, device)
+    x_train, y_train = dataloader.data_transform(
+        train, args.n_his, args.n_pred, device)
+    x_val, y_val = dataloader.data_transform(
+        val, args.n_his, args.n_pred, device)
+    x_test, y_test = dataloader.data_transform(
+        test, args.n_his, args.n_pred, device)
 
     train_data = utils.data.TensorDataset(x_train, y_train)
-    train_iter = utils.data.DataLoader(dataset=train_data, batch_size=args.batch_size, shuffle=False)
+    train_iter = utils.data.DataLoader(
+        dataset=train_data, batch_size=args.batch_size, shuffle=False)
     val_data = utils.data.TensorDataset(x_val, y_val)
-    val_iter = utils.data.DataLoader(dataset=val_data, batch_size=args.batch_size, shuffle=False)
+    val_iter = utils.data.DataLoader(
+        dataset=val_data, batch_size=args.batch_size, shuffle=False)
     test_data = utils.data.TensorDataset(x_test, y_test)
-    test_iter = utils.data.DataLoader(dataset=test_data, batch_size=args.batch_size, shuffle=False)
+    test_iter = utils.data.DataLoader(
+        dataset=test_data, batch_size=args.batch_size, shuffle=False)
 
     return n_vertex, zscore, train_iter, val_iter, test_iter
 
+
 def prepare_model(args, blocks, n_vertex):
     loss = nn.MSELoss()
-    es = earlystopping.EarlyStopping(mode='min', min_delta=0.0, patience=args.patience)
+    es = earlystopping.EarlyStopping(
+        mode='min', min_delta=0.0, patience=args.patience)
 
     if args.graph_conv_type == 'cheb_graph_conv':
         model = models.STGCNChebGraphConv(args, blocks, n_vertex).to(device)
@@ -141,17 +165,23 @@ def prepare_model(args, blocks, n_vertex):
         model = models.STGCNGraphConv(args, blocks, n_vertex).to(device)
 
     if args.opt == "rmsprop":
-        optimizer = optim.RMSprop(model.parameters(), lr=args.lr, weight_decay=args.weight_decay_rate)
+        optimizer = optim.RMSprop(
+            model.parameters(), lr=args.lr, weight_decay=args.weight_decay_rate)
     elif args.opt == "adam":
-        optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay_rate, amsgrad=False)
+        optimizer = optim.Adam(model.parameters(), lr=args.lr,
+                               weight_decay=args.weight_decay_rate, amsgrad=False)
     elif args.opt == "adamw":
-        optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay_rate, amsgrad=False)
+        optimizer = optim.AdamW(model.parameters(
+        ), lr=args.lr, weight_decay=args.weight_decay_rate, amsgrad=False)
     else:
-        raise NotImplementedError(f'ERROR: The optimizer {args.opt} is not implemented.')
+        raise NotImplementedError(
+            f'ERROR: The optimizer {args.opt} is not implemented.')
 
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
+    scheduler = optim.lr_scheduler.StepLR(
+        optimizer, step_size=args.step_size, gamma=args.gamma)
 
     return loss, es, model, optimizer, scheduler
+
 
 def train(loss, args, optimizer, scheduler, es, model, train_iter, val_iter):
     for epoch in range(args.epochs):
@@ -159,6 +189,10 @@ def train(loss, args, optimizer, scheduler, es, model, train_iter, val_iter):
         model.train()
         for x, y in tqdm.tqdm(train_iter):
             y_pred = model(x).view(len(x), -1)  # [batch_size, num_nodes]
+            print(f"y_pred.shape = {y_pred.shape}")
+            print(f"y.shape = {y.shape}")
+            #y_pred=y_pred.resize(32,58)
+            #print(y_pred.shape)
             l = loss(y_pred, y)
             optimizer.zero_grad()
             l.backward()
@@ -168,13 +202,15 @@ def train(loss, args, optimizer, scheduler, es, model, train_iter, val_iter):
             n += y.shape[0]
         val_loss = val(model, val_iter)
         # GPU memory usage
-        gpu_mem_alloc = torch.cuda.max_memory_allocated() / 1000000 if torch.cuda.is_available() else 0
-        print('Epoch: {:03d} | Lr: {:.20f} |Train loss: {:.6f} | Val loss: {:.6f} | GPU occupy: {:.6f} MiB'.\
-            format(epoch+1, optimizer.param_groups[0]['lr'], l_sum / n, val_loss, gpu_mem_alloc))
+        gpu_mem_alloc = torch.cuda.max_memory_allocated(
+        ) / 1000000 if torch.cuda.is_available() else 0
+        print('Epoch: {:03d} | Lr: {:.20f} |Train loss: {:.6f} | Val loss: {:.6f} | GPU occupy: {:.6f} MiB'.
+              format(epoch+1, optimizer.param_groups[0]['lr'], l_sum / n, val_loss, gpu_mem_alloc))
 
         if es.step(val_loss):
             print('Early stopping.')
             break
+
 
 @torch.no_grad()
 def val(model, val_iter):
@@ -187,25 +223,28 @@ def val(model, val_iter):
         n += y.shape[0]
     return torch.tensor(l_sum / n)
 
-@torch.no_grad() 
+
+@torch.no_grad()
 def test(zscore, loss, model, test_iter, args, return_preds=False):
     model.eval()
-    test_MSE, preds, ground_truths = utility.evaluate_model(model, loss, test_iter, return_preds)
-    test_MAE, test_RMSE, test_WMAPE = utility.evaluate_metric(model, test_iter, zscore)
+    test_MSE, preds, ground_truths = utility.evaluate_model(
+        model, loss, test_iter, return_preds)
+    test_MAE, test_RMSE, test_WMAPE = utility.evaluate_metric(
+        model, test_iter, zscore)
     print(f'Dataset {args.dataset:s} | Test loss {test_MSE:.6f} | MAE {test_MAE:.6f} | RMSE {test_RMSE:.6f} | WMAPE {test_WMAPE:.8f}')
     return preds, ground_truths
-
 
 
 @torch.no_grad()
 def plot_predictions(preds, ground_truths, figname="./prediction.png"):
     plt.figure(figsize=(15, 15))
     for i in range(len(preds)):
-        plt.plot(range(i, i+len(preds[i])), preds[i].cpu().numpy(), marker='o', color='black', markersize=5, linestyle='dashed')
-        plt.plot(range(i, i+len(ground_truths[i])), ground_truths[i].cpu().numpy(), marker='x', color='red', markersize=6, linestyle='-.')
+        plt.plot(range(i, i+len(preds[i])), preds[i].cpu().numpy(),
+                 marker='o', color='black', markersize=5, linestyle='dashed')
+        plt.plot(range(i, i+len(ground_truths[i])), ground_truths[i].cpu(
+        ).numpy(), marker='x', color='red', markersize=6, linestyle='-.')
     plt.savefig(figname)
     plt.show()
-
 
 
 if __name__ == "__main__":
@@ -215,10 +254,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     args, device, blocks = get_parameters()
-    n_vertex, zscore, train_iter, val_iter, test_iter = data_preparate(args, device)
-    loss, es, model, optimizer, scheduler = prepare_model(args, blocks, n_vertex)
+    n_vertex, zscore, train_iter, val_iter, test_iter = data_preparate(
+        args, device)
+    loss, es, model, optimizer, scheduler = prepare_model(
+        args, blocks, n_vertex)
     train(loss, args, optimizer, scheduler, es, model, train_iter, val_iter)
-    preds, ground_truths = test(zscore, loss, model, test_iter, args, return_preds=True)
+    preds, ground_truths = test(
+        zscore, loss, model, test_iter, args, return_preds=True)
     plot_predictions(preds, ground_truths)
-
-
