@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 import seaborn as sns
+from datetime import datetime
 
 import torch
 import torch.nn as nn
@@ -39,11 +40,13 @@ def set_env(seed):
 
 def get_parameters():
     parser = argparse.ArgumentParser(description='STGCN')
+    parser.add_argument("--framework", type=str,
+                        choices=['STAGCN', 'STGCN'], default='STAGCN')
     parser.add_argument('--enable_cuda', type=bool,
                         default=True, help='enable CUDA, default as True')
     parser.add_argument('--seed', type=int, default=42,
                         help='set the random seed for stabilizing experiment results')
-    parser.add_argument('--dataset', type=str, default='metr-la',
+    parser.add_argument('--dataset', type=str, default='covid',
                         choices=['metr-la', 'pems-bay', 'pemsd7-m', 'covid'])
     parser.add_argument('--n_his', type=int, default=30)
     parser.add_argument('--n_pred', type=int, default=10,
@@ -226,21 +229,95 @@ def val(model, val_iter):
 def test(zscore, loss, model, test_iter, args, return_preds=False):
     model.eval()
     test_MSE, preds, ground_truths = utility.evaluate_model(
-        model, loss, test_iter, return_preds)
-    test_MAE, test_RMSE, test_WMAPE, test_NRMSE, test_MAPE = utility.evaluate_metric(
+        model, loss, test_iter, return_preds, scaler=zscore)
+    print(len(preds), len(ground_truths))
+    test_MAE, test_RMSE, test_WMAPE, test_NRMSE, test_MAPE, _, __ = utility.evaluate_metric(
         model, test_iter, zscore)
     print(f'Dataset {args.dataset:s} | Test loss {test_MSE:.6f} | MAE {test_MAE:.6f} | RMSE {test_RMSE:.6f} | WMAPE {test_WMAPE:.8f} | NRMSE {test_NRMSE:.6f} | MAPE {test_MAPE:.6f}')
     return preds, ground_truths
 
 
 @torch.no_grad()
-def plot_predictions(preds, ground_truths, figname="./prediction.png"):
-    plt.figure(figsize=(15, 15))
-    for i in range(len(preds)):
-        plt.plot(range(i, i+len(preds[i])), preds[i].cpu().numpy(),
-                 marker='o', color='black', markersize=5, linestyle='dashed')
-        plt.plot(range(i, i+len(ground_truths[i])), ground_truths[i].cpu(
-        ).numpy(), marker='x', color='red', markersize=6, linestyle='-.')
+def plot_predictions(preds, ground_truths, args):
+    timestamp = datetime.now().strftime("%H_%M_%S")
+    figname = f"./{args.framework}_{args.seed}_{args.n_his}_{args.n_pred}_{args.stblock_num}_{args.patience}_{timestamp}_predictions.png"
+    plt.figure(figsize=(20, 20))
+    preds = np.array(preds)
+    ground_truths = np.array(ground_truths)
+    plt.plot(range(preds.shape[1]), preds.mean(axis=0),
+             marker='o', color='black', markersize=5, linestyle='--', label="Predictions")
+    plt.plot(range(preds.shape[1]), ground_truths.mean(axis=0),
+             marker='x', color='red', markersize=6, linestyle='-.', label="Ground-Truth")
+    plt.legend()
+    plt.title("Predictions vs Ground-Truths")
+    plt.ylabel("Average number of cases")
+    plt.xlabel("Cities")
+    plt.xticks(range(preds.shape[1]), [
+        "Alameda",
+        "Alpine",
+        "Amador",
+        "Butte",
+        "Calaveras",
+        "Colusa",
+        "Contra Costa",
+        "Del Norte",
+        "El Dorado",
+        "Fresno",
+        "Glenn",
+        "Humboldt",
+        "Imperial",
+        "Inyo",
+        "Kern",
+        "Kings",
+        "Lake",
+        "Lassen",
+        "Los Angeles",
+        "Madera",
+        "Marin",
+        "Mariposa",
+        "Mendocino",
+        "Merced",
+        "Modoc",
+        "Mono",
+        "Monterey",
+        "Napa",
+        "Nevada",
+        "Orange",
+        "Placer",
+        "Plumas",
+        "Riverside",
+        "Sacramento",
+        "San Benito",
+        "San Bernardino",
+        "San Diego",
+        "San Francisco",
+        "San Joaquin",
+        "San Luis Obispo",
+        "San Mateo",
+        "Santa Barbara",
+        "Santa Clara",
+        "Santa Cruz",
+        "Shasta",
+        "Sierra",
+        "Siskiyou",
+        "Solano",
+        "Sonoma",
+        "Stanislaus",
+        "Sutter",
+        "Tehama",
+        "Trinity",
+        "Tulare",
+        "Tuolumne",
+        "Ventura",
+        "Yolo",
+        "Yuba"], rotation=90)
+    # for i in range(len(preds)):
+    #     print(preds[i])
+    #     print(ground_truths[i])
+    #     plt.plot(preds[i],
+    #              marker='o', color='black', markersize=5, linestyle='--')
+    #     plt.plot(ground_truths[i],
+    #              marker='x', color='red', markersize=6, linestyle='-.')
     plt.savefig(figname)
     plt.show()
 
@@ -259,4 +336,4 @@ if __name__ == "__main__":
     train(loss, args, optimizer, scheduler, es, model, train_iter, val_iter)
     preds, ground_truths = test(
         zscore, loss, model, test_iter, args, return_preds=True)
-    plot_predictions(preds, ground_truths)
+    plot_predictions(preds, ground_truths, args)

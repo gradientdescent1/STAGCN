@@ -33,7 +33,7 @@ class STGCNChebGraphConv(nn.Module):
         for l in range(len(blocks) - 3):
             # print(l)
             modules.append(layers.STConvBlock(args.Kt, args.Ks, n_vertex,
-                                              blocks[l][-1], blocks[l+1], args.act_func, args.graph_conv_type, args.gso, args.enable_bias, args.droprate, n_his, l))
+                                              blocks[l][-1], blocks[l+1], args.act_func, args.graph_conv_type, args.gso, args.enable_bias, args.droprate, n_his, l, args.framework))
             n_his -= 2
         self.st_blocks = nn.Sequential(*modules)
         Ko = args.n_his - (len(blocks) - 3) * 2 * (args.Kt - 1)
@@ -100,7 +100,7 @@ class STGCNGraphConv(nn.Module):
         n_his = args.n_his
         for l in range(len(blocks) - 3):
             modules.append(layers.STConvBlock(args.Kt, args.Ks, n_vertex,
-                                              blocks[l][-1], blocks[l+1], args.act_func, args.graph_conv_type, args.gso, args.enable_bias, args.droprate, n_his, l))
+                                              blocks[l][-1], blocks[l+1], args.act_func, args.graph_conv_type, args.gso, args.enable_bias, args.droprate, n_his, l, args.framework))
             n_his -= 2
         self.st_blocks = nn.Sequential(*modules)
         Ko = args.n_his - (len(blocks) - 3) * 2 * (args.Kt - 1)

@@ -3,6 +3,7 @@ import scipy.sparse as sp
 from scipy.sparse.linalg import eigsh
 import torch
 
+
 def calc_gso(dir_adj, gso_type):
     n_vertex = dir_adj.shape[0]
 
@@ -14,15 +15,17 @@ def calc_gso(dir_adj, gso_type):
     id = sp.identity(n_vertex, format='csc')
 
     # Symmetrizing an adjacency matrix
-    adj = dir_adj + dir_adj.T.multiply(dir_adj.T > dir_adj) - dir_adj.multiply(dir_adj.T > dir_adj)
+    adj = dir_adj + \
+        dir_adj.T.multiply(dir_adj.T > dir_adj) - \
+        dir_adj.multiply(dir_adj.T > dir_adj)
     #adj = 0.5 * (dir_adj + dir_adj.transpose())
-    
+
     if gso_type == 'sym_renorm_adj' or gso_type == 'rw_renorm_adj' \
-        or gso_type == 'sym_renorm_lap' or gso_type == 'rw_renorm_lap':
+            or gso_type == 'sym_renorm_lap' or gso_type == 'rw_renorm_lap':
         adj = adj + id
-    
+
     if gso_type == 'sym_norm_adj' or gso_type == 'sym_renorm_adj' \
-        or gso_type == 'sym_norm_lap' or gso_type == 'sym_renorm_lap':
+            or gso_type == 'sym_norm_lap' or gso_type == 'sym_renorm_lap':
         row_sum = adj.sum(axis=1).A1
         row_sum_inv_sqrt = np.power(row_sum, -0.5)
         row_sum_inv_sqrt[np.isinf(row_sum_inv_sqrt)] = 0.
@@ -37,7 +40,7 @@ def calc_gso(dir_adj, gso_type):
             gso = sym_norm_adj
 
     elif gso_type == 'rw_norm_adj' or gso_type == 'rw_renorm_adj' \
-        or gso_type == 'rw_norm_lap' or gso_type == 'rw_renorm_lap':
+            or gso_type == 'rw_norm_lap' or gso_type == 'rw_renorm_lap':
         row_sum = np.sum(adj, axis=1).A1
         row_sum_inv = np.power(row_sum, -1)
         row_sum_inv[np.isinf(row_sum_inv)] = 0.
@@ -55,6 +58,7 @@ def calc_gso(dir_adj, gso_type):
         raise ValueError(f'{gso_type} is not defined.')
 
     return gso
+
 
 def calc_chebynet_gso(gso):
     if sp.issparse(gso) == False:
@@ -74,6 +78,7 @@ def calc_chebynet_gso(gso):
 
     return gso
 
+
 def cnv_sparse_mat_to_coo_tensor(sp_mat, device):
     # convert a compressed sparse row (csr) or compressed sparse column (csc) matrix to a hybrid sparse coo tensor
     sp_coo_mat = sp_mat.tocoo()
@@ -84,9 +89,11 @@ def cnv_sparse_mat_to_coo_tensor(sp_mat, device):
     if sp_mat.dtype == np.float32 or sp_mat.dtype == np.float64:
         return torch.sparse_coo_tensor(indices=i, values=v, size=s, dtype=torch.float32, device=device, requires_grad=False)
     else:
-        raise TypeError(f'ERROR: The dtype of {sp_mat} is {sp_mat.dtype}, not been applied in implemented models.')
+        raise TypeError(
+            f'ERROR: The dtype of {sp_mat} is {sp_mat.dtype}, not been applied in implemented models.')
 
-def evaluate_model(model, loss, data_iter, return_preds = False):
+
+def evaluate_model(model, loss, data_iter, return_preds=False, scaler=None):
     model.eval()
     l_sum, n = 0.0, 0
     preds = []
@@ -94,9 +101,12 @@ def evaluate_model(model, loss, data_iter, return_preds = False):
     with torch.no_grad():
         for x, y in data_iter:
             y_pred = model(x).view(len(x), -1)
+            print(y_pred.shape)
             if return_preds:
-                preds.append(y_pred)
-                ground_truths.append(y)
+                preds.append(scaler.inverse_transform(
+                    y_pred.cpu().numpy()).mean(axis=0))
+                ground_truths.append(
+                    scaler.inverse_transform(y.cpu().numpy()).mean(axis=0))
             l = loss(y_pred, y)
             l_sum += l.item() * y.shape[0]
             n += y.shape[0]
@@ -107,13 +117,19 @@ def evaluate_model(model, loss, data_iter, return_preds = False):
 
         return mse
 
+
 def evaluate_metric(model, data_iter, scaler):
     model.eval()
+    preds = []
+    ground_truths = []
     with torch.no_grad():
         mae, sum_y, mape, mse = [], [], [], []
         for x, y in data_iter:
             y = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
-            y_pred = scaler.inverse_transform(model(x).view(len(x), -1).cpu().numpy()).reshape(-1)
+            ground_truths.append(y)
+            y_pred = scaler.inverse_transform(
+                model(x).view(len(x), -1).cpu().numpy()).reshape(-1)
+            preds.append(y_pred)
             d = np.abs(y - y_pred)
             mae += d.tolist()
             sum_y += y.tolist()
@@ -123,6 +139,6 @@ def evaluate_metric(model, data_iter, scaler):
         MAPE = np.array(mape).mean()
         RMSE = np.sqrt(np.array(mse).mean())
         WMAPE = np.sum(np.array(mae)) / np.sum(np.array(sum_y))
-        NRMSE = RMSE/((np.max(y) - np.min(y))
-        #return MAE, MAPE, RMSE
-        return MAE, RMSE, WMAPE, MAPE, NRMSE
+        NRMSE = RMSE / ((np.max(y) - np.min(y)))
+        # return MAE, MAPE, RMSE
+        return MAE, RMSE, WMAPE, MAPE, NRMSE, ground_truths, preds

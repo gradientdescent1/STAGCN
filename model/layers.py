@@ -293,7 +293,7 @@ class STConvBlock(nn.Module):
     # N: Layer Normolization
     # D: Dropout
 
-    def __init__(self, Kt, Ks, n_vertex, last_block_channel, channels, act_func, graph_conv_type, gso, bias, droprate, n_his=None, l=None):
+    def __init__(self, Kt, Ks, n_vertex, last_block_channel, channels, act_func, graph_conv_type, gso, bias, droprate, n_his=None, l=None, use_attn=None):
         super(STConvBlock, self).__init__()
         self.tmp_conv1 = TemporalConvLayer(
             Kt, last_block_channel, channels[0], n_vertex, act_func)
@@ -302,9 +302,12 @@ class STConvBlock(nn.Module):
         self.tmp_conv2 = TemporalConvLayer(
             Kt, channels[1], channels[2], n_vertex, act_func)
 
-        self.attn = MultiHeadSelfAttention(
-            hidden_dim=144*(n_his - 2*(l+1)), num_heads=1)
-        self.fcn = nn.Linear(144*(n_his - 2*(l+1)), 64*(n_his - 2*(l+1) - 2))
+        self.use_attn = use_attn
+        if self.use_attn:
+            self.attn = MultiHeadSelfAttention(
+                hidden_dim=144*(n_his - 2*(l+1)), num_heads=1)
+            self.fcn = nn.Linear(144*(n_his - 2*(l+1)),
+                                 64*(n_his - 2*(l+1) - 2))
 
         # if n_his == 30:
         #     self.attn = MultiHeadSelfAttention(
@@ -326,7 +329,7 @@ class STConvBlock(nn.Module):
         self.dropout = nn.Dropout(p=droprate)
 
     def forward(self, x):
-        #print("############################ entering the forward method of STConvBlock ###########################################")
+        # print("############################ entering the forward method of STConvBlock ###########################################")
         #print(f"Input shape to STConvBlock = {x.shape}")
         #print(f"n_his from forward = {self.n_his}")
         #print(f"l from forward = {self.l}")
@@ -338,32 +341,27 @@ class STConvBlock(nn.Module):
         # print(graph1.shape)
         x = self.tmp_conv2(graph1)
         # print(x.shape)
-        tmp2 = F.pad(x, (0, 0, 1, 1), "constant", 0)
-        # print(tmp2.shape)
-        concat = torch.cat([tmp1, graph1, tmp2], dim=1)
-        #print(f"concat.shape = {concat.shape}")
-        batch_size, channels, embed_dim, num_nodes = concat.size()
-        #print(f"embed_dim = {embed_dim}")
-        attn_out, _ = self.attn(concat.reshape(
-            batch_size, num_nodes, channels*embed_dim))
-        # print(batch_size, channels, embed_dim, num_nodes)
-        #print(f"attention_output.shape = {attn_out.shape}")
-        attn_out = self.fcn(attn_out)
-        #print(f"shape after adjusting = {attn_out.shape}")
-        batch_size, channels, embed_dim, num_nodes = concat.size()
-        #print(f"embed_dim = {embed_dim}")
+        if self.use_attn:
+            tmp2 = F.pad(x, (0, 0, 1, 1), "constant", 0)
+            # print(tmp2.shape)
+            concat = torch.cat([tmp1, graph1, tmp2], dim=1)
+            #print(f"concat.shape = {concat.shape}")
+            batch_size, channels, embed_dim, num_nodes = concat.size()
+            #print(f"embed_dim = {embed_dim}")
 
-        if embed_dim == 28:
+            attn_out, _ = self.attn(concat.reshape(
+                batch_size, num_nodes, channels*embed_dim))
+            # print(batch_size, channels, embed_dim, num_nodes)
+            #print(f"attention_output.shape = {attn_out.shape}")
+            attn_out = self.fcn(attn_out)
+            #print(f"shape after adjusting = {attn_out.shape}")
+            batch_size, channels, embed_dim, num_nodes = concat.size()
+            #print(f"embed_dim = {embed_dim}")
             x1 = attn_out.permute(0, 2, 1).view(
                 batch_size, -1, embed_dim-2, num_nodes)
-        else:
-            #print(f"shape after permute")
-            x1 = attn_out.permute(0, 2, 1).reshape(
-                (batch_size, -1, embed_dim-2, num_nodes))
-
-        #print(f"x1.shape = {x1.shape}")
-        # x1 = attn_out
-        x = x1
+            #print(f"x1.shape = {x1.shape}")
+            # x1 = attn_out
+            x = x1
 
         x = self.tc2_ln(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
         x = self.dropout(x)
