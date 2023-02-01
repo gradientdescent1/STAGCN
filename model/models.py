@@ -52,6 +52,10 @@ class STGCNChebGraphConv(nn.Module):
             self.silu = nn.SiLU()
             self.dropout = nn.Dropout(p=args.droprate)
 
+        # self.fc3 = nn.Linear(
+        #     in_features=1, out_features=args.n_pred, bias=args.enable_bias)
+        # self.n_vertex = n_vertex
+
     def forward(self, x):
         #print(f"initial shape = {x.shape}, self.Ko = {self.Ko}")
         x = self.st_blocks(x)
@@ -67,6 +71,13 @@ class STGCNChebGraphConv(nn.Module):
             #print(f"after relu in Ko = {x.shape}")
             x = self.fc2(x).permute(0, 3, 1, 2)
             #print(f"after fc2 in Ko = {x.shape}")
+
+        # print(f"Current pred shape = {x.shape}")
+
+        # x = self.fc3(
+        #     x.reshape(-1, 1, self.n_vertex).permute(0, 2, 1)).permute(0, 2, 1)
+
+        # print(f"New pred shape = {x.shape}")
 
         return x
 
@@ -118,6 +129,10 @@ class STGCNGraphConv(nn.Module):
             self.silu = nn.SiLU()
             self.do = nn.Dropout(p=args.droprate)
 
+        # self.fc3 = nn.Linear(
+        #     in_features=1, out_features=args.n_pred, bias=args.enable_bias)
+        # self.n_vertex = n_vertex
+
     def forward(self, x):
         x = self.st_blocks(x)
         if self.Ko > 1:
@@ -126,5 +141,11 @@ class STGCNGraphConv(nn.Module):
             x = self.fc1(x.permute(0, 2, 3, 1))
             x = self.relu(x)
             x = self.fc2(x).permute(0, 3, 1, 2)
+
+        # print(f"Current pred shape = {x.shape}")
+
+        # x = self.fc3(x.reshape(-1, 1, self.n_vertex))
+
+        # print(f"New pred shape = {x.shape}")
 
         return x

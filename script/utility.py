@@ -101,7 +101,7 @@ def evaluate_model(model, loss, data_iter, return_preds=False, scaler=None):
     with torch.no_grad():
         for x, y in data_iter:
             y_pred = model(x).view(len(x), -1)
-            print(y_pred.shape)
+            # print(y_pred.shape)
             if return_preds:
                 preds.append(scaler.inverse_transform(
                     y_pred.cpu().numpy()).mean(axis=0))

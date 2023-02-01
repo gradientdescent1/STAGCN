@@ -240,7 +240,7 @@ def test(zscore, loss, model, test_iter, args, return_preds=False):
 @torch.no_grad()
 def plot_predictions(preds, ground_truths, args):
     timestamp = datetime.now().strftime("%H_%M_%S")
-    figname = f"./{args.framework}_{args.seed}_{args.n_his}_{args.n_pred}_{args.stblock_num}_{args.patience}_{timestamp}_predictions.png"
+    figname = f"./images/{args.framework}_{args.graph_conv_type}_{args.seed}_{args.n_his}_{args.n_pred}_{args.stblock_num}_{args.patience}_{timestamp}_predictions.png"
     plt.figure(figsize=(20, 20))
     preds = np.array(preds)
     ground_truths = np.array(ground_truths)

@@ -303,7 +303,8 @@ class STConvBlock(nn.Module):
             Kt, channels[1], channels[2], n_vertex, act_func)
 
         self.use_attn = use_attn
-        if self.use_attn:
+        if self.use_attn == "STAGCN":
+            print("Using attention")
             self.attn = MultiHeadSelfAttention(
                 hidden_dim=144*(n_his - 2*(l+1)), num_heads=1)
             self.fcn = nn.Linear(144*(n_his - 2*(l+1)),
@@ -341,7 +342,7 @@ class STConvBlock(nn.Module):
         # print(graph1.shape)
         x = self.tmp_conv2(graph1)
         # print(x.shape)
-        if self.use_attn:
+        if self.use_attn == "STAGCN":
             tmp2 = F.pad(x, (0, 0, 1, 1), "constant", 0)
             # print(tmp2.shape)
             concat = torch.cat([tmp1, graph1, tmp2], dim=1)
@@ -366,7 +367,7 @@ class STConvBlock(nn.Module):
         x = self.tc2_ln(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
         x = self.dropout(x)
 
-        #print(f"output_shape = {x.shape}")
+        # print(f"output_shape = {x.shape}")
 
         return x
 
