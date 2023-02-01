@@ -1,0 +1,30 @@
+(aven) D:\Research\Bangalore\STGCN>python main.py --framework STGCN --seed 99 --patience 20 --stblock_num 3 --graph_conv_type cheb_graph_conv
+Training configs: Namespace(Ks=3, Kt=3, act_func='glu', batch_size=32, dataset='covid', droprate=0.5, enable_bias=True, enable_cuda=True, epochs=10000, framework='STGCN', gamma=0.95, graph_conv_type='cheb_graph_conv', gso_type='sym_norm_lap', lr=0.001, n_his=30, n_pred=10, opt='adam', patience=20, seed=99, stblock_num=3, step_size=10, time_intvl=1, weight_decay_rate=0.0005)
+Epoch: 001 | Lr: 0.00090249999999999998 |Train loss: 1.075969 | Val loss: 0.206175 | GPU occupy: 348.955136 MiB
+Epoch: 002 | Lr: 0.00081450624999999987 |Train loss: 0.971857 | Val loss: 0.151943 | GPU occupy: 348.955136 MiB
+Epoch: 003 | Lr: 0.00073509189062499975 |Train loss: 0.830580 | Val loss: 0.189561 | GPU occupy: 348.955136 MiB
+Epoch: 004 | Lr: 0.00063024940972460899 |Train loss: 0.711142 | Val loss: 0.205268 | GPU occupy: 348.955136 MiB
+Epoch: 005 | Lr: 0.00056880009227645953 |Train loss: 0.636625 | Val loss: 0.164770 | GPU occupy: 348.955136 MiB
+Epoch: 006 | Lr: 0.00051334208327950468 |Train loss: 0.589166 | Val loss: 0.172714 | GPU occupy: 348.955136 MiB
+Epoch: 007 | Lr: 0.00044012666865176530 |Train loss: 0.569580 | Val loss: 0.162589 | GPU occupy: 348.955136 MiB
+Epoch: 008 | Lr: 0.00039721431845821814 |Train loss: 0.551141 | Val loss: 0.146065 | GPU occupy: 348.955136 MiB
+Epoch: 009 | Lr: 0.00035848592240854182 |Train loss: 0.489360 | Val loss: 0.176344 | GPU occupy: 348.955136 MiB
+Epoch: 010 | Lr: 0.00030735686772502346 |Train loss: 0.495442 | Val loss: 0.165318 | GPU occupy: 348.955136 MiB
+Epoch: 011 | Lr: 0.00027738957312183364 |Train loss: 0.470888 | Val loss: 0.169604 | GPU occupy: 348.955136 MiB
+Epoch: 012 | Lr: 0.00025034408974245479 |Train loss: 0.459097 | Val loss: 0.155544 | GPU occupy: 348.955136 MiB
+Epoch: 013 | Lr: 0.00022593554099256544 |Train loss: 0.418453 | Val loss: 0.180243 | GPU occupy: 348.955136 MiB
+Epoch: 014 | Lr: 0.00019371148445850077 |Train loss: 0.414360 | Val loss: 0.177881 | GPU occupy: 348.955136 MiB
+Epoch: 015 | Lr: 0.00017482461472379692 |Train loss: 0.405694 | Val loss: 0.173338 | GPU occupy: 348.955136 MiB
+Epoch: 016 | Lr: 0.00015777921478822671 |Train loss: 0.397531 | Val loss: 0.180355 | GPU occupy: 348.955136 MiB
+Epoch: 017 | Lr: 0.00013527595427905584 |Train loss: 0.388842 | Val loss: 0.172709 | GPU occupy: 348.955136 MiB
+Epoch: 018 | Lr: 0.00012208654873684788 |Train loss: 0.371004 | Val loss: 0.176849 | GPU occupy: 348.955136 MiB
+Epoch: 019 | Lr: 0.00011018311023500519 |Train loss: 0.367113 | Val loss: 0.175665 | GPU occupy: 348.955136 MiB
+Epoch: 020 | Lr: 0.00009446824413773756 |Train loss: 0.355928 | Val loss: 0.178883 | GPU occupy: 348.955136 MiB
+Epoch: 021 | Lr: 0.00008525759033430814 |Train loss: 0.352597 | Val loss: 0.176030 | GPU occupy: 348.955136 MiB
+Epoch: 022 | Lr: 0.00007694497527671309 |Train loss: 0.347738 | Val loss: 0.178250 | GPU occupy: 348.955136 MiB
+Epoch: 023 | Lr: 0.00006944284018723356 |Train loss: 0.348467 | Val loss: 0.182732 | GPU occupy: 348.955136 MiB
+Epoch: 024 | Lr: 0.00005953855510552937 |Train loss: 0.347888 | Val loss: 0.176873 | GPU occupy: 348.955136 MiB
+Epoch: 025 | Lr: 0.00005373354598274025 |Train loss: 0.341184 | Val loss: 0.176242 | GPU occupy: 348.955136 MiB
+Epoch: 026 | Lr: 0.00004849452524942307 |Train loss: 0.340421 | Val loss: 0.179362 | GPU occupy: 348.955136 MiB
+Epoch: 027 | Lr: 0.00004157799358572409 |Train loss: 0.345155 | Val loss: 0.177594 | GPU occupy: 348.955136 MiB
+Epoch: 028 | Lr: 0.00003752413921111599 |Train loss: 0.333739 | Val loss: 0.178667 | GPU occupy: 348.955136 MiB
