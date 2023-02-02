@@ -33,7 +33,7 @@ Using the formula from [ChebNet](https://arxiv.org/abs/1606.09375)：
 <img src="./figure/weighted_adjacency_matrix.png" style="zoom:100%" />
 
 ## Model structure
-<img src="./figure/stgcn_model_structure.png" style="zoom:100%" />
+<img src="./figure/stagcn.png" style="zoom:100%" />
 
 ## Differents of code between mine and author's
 1. Fix bugs 
