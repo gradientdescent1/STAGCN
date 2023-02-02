@@ -27,6 +27,7 @@ https://arxiv.org/abs/1709.04875
 1. METR-LA: [DCRNN author's Google Drive](https://drive.google.com/file/d/1pAGRfzMx6K9WWsfDcD1NMbIif0T0saFC/view?usp=sharing)
 2. PEMS-BAY: [DCRNN author's Google Drive](https://drive.google.com/file/d/1wD-mHlqAb2mtHOe_68fZvDh1LpDegMMq/view?usp=sharing)
 3. PeMSD7(M): [STGCN author's GitHub repository](https://github.com/VeritasYin/STGCN_IJCAI-18/blob/master/data_loader/PeMS-M.zip)
+4. Covid: https://covid19.who.int/
 
 ### Preprocessing
 Using the formula from [ChebNet](https://arxiv.org/abs/1606.09375)：
