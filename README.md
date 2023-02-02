@@ -1,12 +1,12 @@
-# Spatio-Temporal Graph Convolutional Networks
+# Spatio-Temporal Attention Graph Convolutional Networks
 [![issues](https://img.shields.io/github/issues/hazdzz/STGCN)](https://github.com/hazdzz/STGCN/issues)
 [![forks](https://img.shields.io/github/forks/hazdzz/STGCN)](https://github.com/hazdzz/STGCN/network/members)
 [![stars](https://img.shields.io/github/stars/hazdzz/STGCN)](https://github.com/hazdzz/STGCN/stargazers)
 [![License](https://img.shields.io/github/license/hazdzz/STGCN)](./LICENSE)
 
 ## About
-The PyTorch version of STGCN implemented for the paper *Spatio-Temporal Graph Convolutional Networks:
-A Deep Learning Framework for Traffic Forecasting*.
+The PyTorch version of STGCN implemented for the paper *Spatio-Temporal Attention Graph Convolutional Networks:
+A Deep Learning Framework for COVID-19 forecasting*.
 
 ## Paper
 https://arxiv.org/abs/1709.04875
