@@ -36,15 +36,6 @@ Using the formula from [ChebNet](https://arxiv.org/abs/1606.09375)：
 ## Model structure
 <img src="./figure/stagcn.png" style="zoom:100%" />
 
-## Differents of code between mine and author's
-1. Fix bugs 
-2. Add Early Stopping approach
-3. Add Dropout approach
-4. Offer a different set of hyperparameters
-5. Offer config files for two different categories graph convolution (ChebyGraphConv and GraphConv)
-6. Add datasets METR-LA and PEMS-BAY
-7. Adopt a different data preprocessing method
-
 ## Requirements
 To install requirements:
 ```console
