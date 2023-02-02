@@ -6,7 +6,7 @@ import re
 
 def plot_loss_curves(file):
     all_text = None
-    with open(file, "cr") as f:
+    with open(file, "r", encoding="cp437", errors='ignore') as f:
         all_text = f.read()
 
     regex_train = r"Train loss: (\d*.\d*)"
@@ -22,7 +22,8 @@ def plot_loss_curves(file):
     plt.title(f"Loss vs Epochs for {file.rstrip('.txt')}")
     plt.xlabel("Epochs")
     plt.ylabel("Loss")
-    plt.savefig(f"./images/{file.rstrip('.txt')}.png")
+    framework = file.rstrip('.txt').lstrip('./logs/')
+    plt.savefig(f"./images/{framework}.png")
     plt.show()
 
 
