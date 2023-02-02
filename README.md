@@ -30,7 +30,7 @@ https://arxiv.org/abs/1709.04875
 
 ### Preprocessing
 Using the formula from [ChebNet](https://arxiv.org/abs/1606.09375)：
-<img src="./figure/weighted_adjacency_matrix.png" style="zoom:100%" />
+<img src="./figure/stagcn.png" style="zoom:100%" />
 
 ## Model structure
 <img src="./figure/stgcn_model_structure.png" style="zoom:100%" />
